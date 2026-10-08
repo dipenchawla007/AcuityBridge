@@ -1,0 +1,100 @@
+# =============================================================================
+# Sample Partner Policy Configurations
+# =============================================================================
+#
+# This file demonstrates how different partner organizations configure their
+# own workflow policies.  Each organization defines escalation thresholds,
+# crisis resource routing, consent models, and clinician SLAs tailored to
+# their operational context.
+#
+# ALL DATA IN THIS FILE IS SYNTHETIC.  No real organizations, phone numbers,
+# or endpoints are referenced.
+#
+# DISCLAIMER: These policies are examples for decision-support workflow
+# configuration only.  They do not constitute clinical protocols.
+
+policies:
+  # ---------------------------------------------------------------------------
+  # Partner 1: Community Health Center (rural, limited staffing)
+  # ---------------------------------------------------------------------------
+  - org_id: "clinic_alpha"
+    org_name: "Alpha Community Health Center"
+    escalation_thresholds:
+      yellow_min_distress: 3.5
+      orange_min_distress: 5.5
+      red_min_distress: 7.5
+      low_mood_threshold: 3.0
+      low_sleep_threshold: 3.0
+    crisis_resource_targets:
+      - name: "County Mobile Crisis Team"
+        target_type: "phone"
+        endpoint: "+1-555-0101"
+        requires_baa: true
+      - name: "988 Lifeline (where available)"
+        target_type: "phone"
+        endpoint: "988"
+        requires_baa: false
+    consent_model: "opt_in"
+    data_retention_days: 180
+    notification_channels:
+      - "sms"
+      - "dashboard"
+    clinician_ack_sla_seconds: 900
+    escalation_keyword_overrides:
+      - "overdose"
+      - "relapse"
+
+  # ---------------------------------------------------------------------------
+  # Partner 2: VA-affiliated facility (veterans population)
+  # ---------------------------------------------------------------------------
+  - org_id: "va_bravo"
+    org_name: "Bravo Veterans Support Center"
+    escalation_thresholds:
+      yellow_min_distress: 3.0
+      orange_min_distress: 5.0
+      red_min_distress: 7.0
+      low_mood_threshold: 4.0
+      low_sleep_threshold: 4.0
+    crisis_resource_targets:
+      - name: "Veterans Crisis Line"
+        target_type: "phone"
+        endpoint: "+1-800-273-8255"
+        requires_baa: true
+      - name: "On-Site Crisis Coordinator"
+        target_type: "internal_queue"
+        endpoint: "va_bravo_crisis_queue"
+        requires_baa: true
+    consent_model: "opt_in"
+    data_retention_days: 365
+    notification_channels:
+      - "dashboard"
+      - "webhook"
+    clinician_ack_sla_seconds: 300
+    escalation_keyword_overrides:
+      - "combat"
+      - "nightmare"
+      - "flashback"
+
+  # ---------------------------------------------------------------------------
+  # Partner 3: Employer EAP program (corporate wellness)
+  # ---------------------------------------------------------------------------
+  - org_id: "corp_charlie"
+    org_name: "Charlie Corp Employee Assistance Program"
+    escalation_thresholds:
+      yellow_min_distress: 4.0
+      orange_min_distress: 6.0
+      red_min_distress: 8.0
+      low_mood_threshold: 3.0
+      low_sleep_threshold: 2.5
+    crisis_resource_targets:
+      - name: "EAP On-Call Counselor"
+        target_type: "webhook"
+        endpoint: "https://eap.example.com/api/crisis-alert"
+        requires_baa: true
+    consent_model: "opt_out"
+    data_retention_days: 90
+    notification_channels:
+      - "dashboard"
+      - "email"
+    clinician_ack_sla_seconds: 600
+    escalation_keyword_overrides: []

@@ -1,0 +1,16 @@
+# AcuityBridge Safety & Escalation Orchestrator -- Docker Compose
+#
+# Quick start:
+#   docker compose up
+#
+# This runs the synthetic scenario demo with entirely synthetic data.
+# No real participant data, PHI, or PII is used.
+#
+# DISCLAIMER: This software is not a medical device.
+
+services:
+  demo:
+    build: .
+    container_name: acuitybridge-demo
+    environment:
+      - PYTHONUNBUFFERED=1
