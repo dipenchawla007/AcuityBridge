@@ -49,6 +49,7 @@ class AuditEventType(str, enum.Enum):
 
     # Signal evaluation
     SIGNAL_EVALUATED = "SIGNAL_EVALUATED"
+    WEARABLE_INGESTED = "WEARABLE_INGESTED"
 
     # Escalation lifecycle
     ESCALATION_OPENED = "ESCALATION_OPENED"

@@ -54,7 +54,20 @@ python examples/synthetic_scenario.py
 python -m pytest tests/ -v
 ```
 
-Both paths use entirely synthetic data. No real participant data, PHI, or PII.
+### Option 3: Local pilot console
+
+```bash
+pip install -e ".[dev]"
+python -m acuitybridge.console --host 127.0.0.1 --port 8741
+```
+
+Open `http://127.0.0.1:8741`. The console stores partner policies, escalation cases, and the hash-chained audit log in `data/acuitybridge.sqlite`. On an empty database it loads the sample policies in `examples/partner_policies.yaml`.
+
+The page has four sandbox roles (participant, clinician, admin, auditor). Elevated check-ins open a case for the sandbox clinician. Acknowledgment and resolution notes are still required. SMS, email, and webhook channels are recorded as stubs and are not delivered.
+
+The wearable section accepts synthetic Apple HealthKit and Fitbit sample names, normalizes them locally, and runs them through the same review gate. It does not contact Apple or Fitbit.
+
+Both the library paths and the console use entirely synthetic data. No real participant data, PHI, or PII.
 
 ---
 
@@ -126,7 +139,7 @@ Full details: [`docs/03_security_privacy.md`](docs/03_security_privacy.md)
 | Metric | Status |
 |--------|--------|
 | CI pipeline | GitHub Actions on every push/PR |
-| Test suite | 84 tests across 7 test modules |
+| Test suite | Core modules plus SQLite persistence and the pilot console |
 | Test coverage | All modules covered (config, escalation, audit, signal evaluator, crisis router, transparency report, RBAC) |
 | Release versioning | Semantic versioning (current: v0.1.0) |
 | License | Apache 2.0 (open-source, enables peer review and adoption) |

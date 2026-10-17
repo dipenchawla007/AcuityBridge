@@ -534,3 +534,14 @@ class EscalationOrchestrator:
             True if automated interaction is currently suspended.
         """
         return participant_id in self._suspended_participants
+
+    def restore_suspension(self, participant_ids: list[str]) -> None:
+        """Rebuild the in-memory suspension set from persisted cases.
+
+        Does not emit audit events. Use this only when process state is
+        being reconstructed from storage that already recorded the
+        original suspension.
+        """
+        for participant_id in participant_ids:
+            if participant_id:
+                self._suspended_participants.add(participant_id)

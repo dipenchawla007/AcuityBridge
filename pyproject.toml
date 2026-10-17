@@ -35,6 +35,12 @@ dev = [
     "pytest-cov>=4.0",
 ]
 
+[project.scripts]
+acuitybridge-console = "acuitybridge.console:main"
+
+[tool.setuptools.package-data]
+acuitybridge = ["static/*.html"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

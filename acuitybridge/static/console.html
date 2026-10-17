@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AcuityBridge Pilot Console</title>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --ink: #1d1a16;
+      --muted: #5f574d;
+      --line: #e2d7c6;
+      --card: #fffdf8;
+      --teal: #0e6b66;
+      --teal-deep: #083f3c;
+      --sand: #efe4d2;
+      --warn-bg: #f8efe4;
+      --warn: #8a3b12;
+      --ok: #2f6b3a;
+      --shadow: 0 1px 0 rgba(29, 26, 22, 0.04);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(1200px 400px at 10% -10%, #e7f3f1 0%, transparent 55%),
+        var(--bg);
+      color: var(--ink);
+      font: 15px/1.5 "Segoe UI", "Helvetica Neue", sans-serif;
+    }
+    header, main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; }
+    header { padding: 28px 0 8px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .mark {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: var(--teal-deep); color: #f4efe6;
+      display: grid; place-items: center; font-weight: 700; letter-spacing: 0.04em;
+    }
+    h1 { font: 600 28px/1.1 Georgia, "Iowan Old Style", serif; margin: 0; }
+    h2 { font: 600 18px/1.2 Georgia, "Iowan Old Style", serif; margin: 0 0 10px; }
+    p { margin: 0; }
+    .sub { color: var(--muted); margin-top: 4px; }
+    .banner, .status, .card, .rolebar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+    }
+    .banner { margin: 16px 0; padding: 12px 14px; background: var(--warn-bg); color: var(--warn); }
+    .status { margin: 0 0 16px; padding: 10px 14px; min-height: 42px; }
+    .status.error { color: var(--warn); border-color: #efc7b4; }
+    .status.ok { color: var(--ok); }
+    .rolebar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; margin-bottom: 16px; }
+    button, select, input, textarea {
+      font: inherit; color: inherit;
+    }
+    button {
+      border: 1px solid var(--line); background: #fff; border-radius: 999px;
+      padding: 8px 14px; cursor: pointer;
+    }
+    button[aria-pressed="true"] { background: var(--teal-deep); color: #f6f3ec; border-color: var(--teal-deep); }
+    button.primary { background: var(--teal); color: white; border-color: var(--teal); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--teal); outline-offset: 2px;
+    }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .span-2 { grid-column: 1 / -1; }
+    .card { padding: 16px; }
+    .who { color: var(--muted); margin: -8px 0 16px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+    input, select, textarea {
+      width: 100%; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .item { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: #fff; }
+    .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .flag { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; border-radius: 999px; padding: 2px 8px; }
+    .flag-green { background: #e7f0d8; color: #3f6212; }
+    .flag-yellow { background: #f8efc8; color: #854d0e; }
+    .flag-orange { background: #fde6d4; color: #9a3412; }
+    .flag-red { background: #f8d7df; color: #9f1239; }
+    .meta { color: var(--muted); font-size: 13px; }
+    pre {
+      white-space: pre-wrap; word-break: break-word; background: #1d1a16; color: #f4efe6;
+      border-radius: 12px; padding: 12px; max-height: 280px; overflow: auto; font-size: 12px;
+    }
+    ol { margin: 8px 0 0; padding-left: 18px; color: var(--muted); }
+    .hidden { display: none; }
+    footer { width: min(1120px, calc(100% - 32px)); margin: 20px auto 32px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 800px) {
+      .layout, .grid-2 { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">AB</div>
+      <div>
+        <h1>AcuityBridge Pilot Console</h1>
+        <p class="sub">Sandbox for synthetic decision-support workflows</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="banner">
+      This software is not a medical device. Flags route work to a person for review. They are not diagnoses, and this console does not contact crisis services. All data here is synthetic.
+    </div>
+    <div id="status" class="status" role="status">Loading the sandbox…</div>
+    <div class="rolebar" role="group" aria-label="Sandbox role">
+      <button type="button" data-token="sandbox-participant" aria-pressed="false">Participant</button>
+      <button type="button" data-token="sandbox-clinician" aria-pressed="false">Clinician</button>
+      <button type="button" data-token="sandbox-admin" aria-pressed="false">Admin</button>
+      <button type="button" data-token="sandbox-auditor" aria-pressed="false">Auditor</button>
+    </div>
+    <p id="who" class="who"></p>
+    <div class="layout">
+      <section class="card">
+        <h2>Synthetic check-in</h2>
+        <p class="meta">Scores are workflow inputs on a 0–10 scale, not clinical instruments.</p>
+        <label for="org">Partner organization</label>
+        <select id="org"></select>
+        <label for="display-name">Display label</label>
+        <input id="display-name" maxlength="120" value="Synthetic participant" />
+        <div class="grid-2">
+          <div>
+            <label for="distress">Distress</label>
+            <input id="distress" type="number" min="0" max="10" step="0.5" placeholder="0–10" />
+          </div>
+          <div>
+            <label for="mood">Mood</label>
+            <input id="mood" type="number" min="0" max="10" step="0.5" placeholder="0–10" />
+          </div>
+          <div>
+            <label for="sleep">Sleep quality</label>
+            <input id="sleep" type="number" min="0" max="10" step="0.5" placeholder="0–10" />
+          </div>
+          <div>
+            <label for="energy">Energy</label>
+            <input id="energy" type="number" min="0" max="10" step="0.5" placeholder="0–10" />
+          </div>
+          <div>
+            <label for="hrv">Heart-rate variability (ms)</label>
+            <input id="hrv" type="number" min="0" max="500" step="1" placeholder="optional" />
+          </div>
+          <div>
+            <label for="sleep-hours">Sleep hours</label>
+            <input id="sleep-hours" type="number" min="0" max="24" step="0.5" placeholder="optional" />
+          </div>
+        </div>
+        <label for="keywords">Keywords, comma-separated</label>
+        <input id="keywords" maxlength="400" placeholder="matched against the partner keyword list" />
+        <label for="notes">Notes</label>
+        <textarea id="notes" maxlength="2000" placeholder="Synthetic note only"></textarea>
+        <div class="actions">
+          <button id="submit-checkin" class="primary" type="button">Submit check-in</button>
+          <button id="fill-sample" type="button">Fill an elevated sample</button>
+        </div>
+        <div id="checkin-result" class="stack" style="margin-top:12px"></div>
+      </section>
+
+      <section class="card">
+        <h2>Escalation cases</h2>
+        <p class="meta">Yellow, orange, and red flags wait for the sandbox clinician. Green does not open a case.</p>
+        <div id="cases" class="stack"></div>
+      </section>
+
+      <section class="card span-2">
+        <h2>Wearable ingestion stub</h2>
+        <p class="meta">HealthKit and Fitbit sample names are normalized on this machine. Nothing is fetched from Apple or Fitbit. Low heart-rate variability or very short sleep can open a clinician review. These are workflow inputs, not clinical measurements.</p>
+        <div class="grid-2">
+          <div>
+            <label for="wearable-source">Source</label>
+            <select id="wearable-source">
+              <option value="apple_healthkit">Apple HealthKit stub</option>
+              <option value="fitbit">Fitbit stub</option>
+            </select>
+          </div>
+          <div>
+            <label for="wearable-name">Display label</label>
+            <input id="wearable-name" maxlength="120" value="Synthetic wearable participant" />
+          </div>
+          <div>
+            <label for="wearable-hrv">Heart-rate variability (ms)</label>
+            <input id="wearable-hrv" type="number" min="0" max="500" step="1" placeholder="optional" />
+          </div>
+          <div>
+            <label for="wearable-sleep">Sleep hours</label>
+            <input id="wearable-sleep" type="number" min="0" max="24" step="0.1" placeholder="optional" />
+          </div>
+          <div>
+            <label for="wearable-steps">Step count</label>
+            <input id="wearable-steps" type="number" min="0" max="200000" step="1" placeholder="optional" />
+          </div>
+        </div>
+        <div class="actions">
+          <button id="submit-wearable" class="primary" type="button">Submit wearable reading</button>
+          <button id="fill-healthkit" type="button">Load low HealthKit sample</button>
+          <button id="fill-fitbit" type="button">Load steady Fitbit sample</button>
+        </div>
+        <div id="wearable-result" class="stack" style="margin-top:12px"></div>
+        <h2 style="margin-top:16px">Recent readings</h2>
+        <div id="wearable-list" class="stack"></div>
+      </section>
+
+      <section class="card span-2">
+        <h2>Partner policies</h2>
+        <div id="policies" class="stack"></div>
+        <form id="policy-editor" class="hidden">
+          <div class="grid-2">
+            <div>
+              <label for="new-org-id">New organization id</label>
+              <input id="new-org-id" maxlength="80" placeholder="clinic_delta" />
+            </div>
+            <div>
+              <label for="new-org-name">Organization name</label>
+              <input id="new-org-name" maxlength="120" placeholder="Delta Community Clinic" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="create-policy" class="primary" type="button">Register policy</button>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label for="edit-yellow">Yellow distress minimum</label>
+              <input id="edit-yellow" type="number" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+              <label for="edit-orange">Orange distress minimum</label>
+              <input id="edit-orange" type="number" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+              <label for="edit-red">Red distress minimum</label>
+              <input id="edit-red" type="number" min="0" max="10" step="0.5" />
+            </div>
+            <div>
+              <label for="edit-sla">Clinician acknowledgment SLA (seconds)</label>
+              <input id="edit-sla" type="number" min="1" step="1" />
+            </div>
+          </div>
+          <div class="actions">
+            <button id="save-policy" type="button">Save thresholds for selected organization</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card span-2">
+        <div class="row">
+          <h2>Audit chain</h2>
+          <button id="export-audit" type="button">Export for review</button>
+        </div>
+        <p id="chain" class="meta"></p>
+        <div id="audit" class="stack"></div>
+        <pre id="export-view" class="hidden"></pre>
+        <ol>
+          <li>As Participant, submit an elevated sample check-in.</li>
+          <li>As Clinician, acknowledge the case and resolve it with notes.</li>
+          <li>As Auditor, export the hash-chained log. The export redacts common PHI patterns.</li>
+          <li>As Participant, load a low HealthKit sample and submit it. The clinician queue should show the wearable case.</li>
+        </ol>
+      </section>
+    </div>
+  </main>
+  <footer>
+    AcuityBridge sandbox. Apache License 2.0. Source: github.com/dipenchawla007/AcuityBridge.
+    Notification channels are recorded locally and are not delivered.
+  </footer>
+  <script>
+    const TOKEN_KEY = "acuitybridge-sandbox-token";
+    const state = {
+      token: localStorage.getItem(TOKEN_KEY) || "sandbox-participant",
+      me: null,
+      policies: [],
+      detail: "summary",
+    };
+
+    const statusEl = document.getElementById("status");
+    const orgEl = document.getElementById("org");
+
+    function setStatus(message, kind) {
+      statusEl.textContent = message;
+      statusEl.className = "status" + (kind ? " " + kind : "");
+    }
+
+    async function api(path, options) {
+      const opts = options || {};
+      const headers = { Authorization: "Bearer " + state.token };
+      let body;
+      if (opts.body) {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(opts.body);
+      }
+      const response = await fetch(path, { method: opts.method || "GET", headers, body });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || ("Request failed (" + response.status + ")"));
+      }
+      return payload;
+    }
+
+    function selectedOrg() {
+      return orgEl.value;
+    }
+
+    function numberOrNull(id) {
+      const value = document.getElementById(id).value.trim();
+      if (value === "") return null;
+      return Number(value);
+    }
+
+    function flagPill(flag) {
+      const span = document.createElement("span");
+      span.className = "flag flag-" + String(flag || "").toLowerCase();
+      span.textContent = flag || "—";
+      return span;
+    }
+
+    function empty(parent, message) {
+      parent.replaceChildren();
+      const p = document.createElement("p");
+      p.className = "meta";
+      p.textContent = message;
+      parent.appendChild(p);
+    }
+
+    function can(action) {
+      return Boolean(state.me && state.me.permissions && state.me.permissions[action]);
+    }
+
+    function syncRoleButtons() {
+      document.querySelectorAll(".rolebar button").forEach((button) => {
+        button.setAttribute("aria-pressed", button.dataset.token === state.token ? "true" : "false");
+      });
+    }
+
+    function fillPolicySelect() {
+      const current = selectedOrg();
+      orgEl.replaceChildren();
+      state.policies.forEach((policy) => {
+        const option = document.createElement("option");
+        option.value = policy.org_id;
+        option.textContent = policy.org_name + " (" + policy.org_id + ")";
+        orgEl.appendChild(option);
+      });
+      if (current && [...orgEl.options].some((option) => option.value === current)) {
+        orgEl.value = current;
+      }
+      document.getElementById("policy-editor").classList.toggle("hidden", !can("manage_policy"));
+      const canSubmit = can("submit_check_in") && state.policies.length > 0;
+      document.getElementById("submit-checkin").disabled = !canSubmit;
+      document.getElementById("submit-wearable").disabled = !canSubmit;
+      document.getElementById("export-audit").disabled = !can("export_audit") || state.policies.length === 0;
+      fillThresholdEditor();
+    }
+
+    function currentPolicy() {
+      return state.policies.find((policy) => policy.org_id === selectedOrg()) || null;
+    }
+
+    function fillThresholdEditor() {
+      const policy = currentPolicy();
+      if (!policy || !policy.escalation_thresholds) return;
+      document.getElementById("edit-yellow").value = policy.escalation_thresholds.yellow_min_distress;
+      document.getElementById("edit-orange").value = policy.escalation_thresholds.orange_min_distress;
+      document.getElementById("edit-red").value = policy.escalation_thresholds.red_min_distress;
+      document.getElementById("edit-sla").value = policy.clinician_ack_sla_seconds;
+    }
+
+    function renderPolicies() {
+      const parent = document.getElementById("policies");
+      if (!state.policies.length) {
+        empty(parent, "No partner policy is stored yet. An admin can register one.");
+        return;
+      }
+      parent.replaceChildren();
+      state.policies.forEach((policy) => {
+        const card = document.createElement("article");
+        card.className = "item";
+        const title = document.createElement("strong");
+        title.textContent = policy.org_name;
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        const bits = [
+          policy.org_id,
+          "consent " + policy.consent_model,
+          "SLA " + policy.clinician_ack_sla_seconds + "s",
+          "channels " + (policy.notification_channels || []).join(", "),
+        ];
+        if (policy.escalation_thresholds) {
+          const t = policy.escalation_thresholds;
+          bits.push("distress Y/O/R " + t.yellow_min_distress + "/" + t.orange_min_distress + "/" + t.red_min_distress);
+        }
+        meta.textContent = bits.join(" · ");
+        card.append(title, meta);
+        parent.appendChild(card);
+      });
+    }
+
+    function renderCases(cases) {
+      const parent = document.getElementById("cases");
+      if (!cases.length) {
+        empty(parent, "No escalation cases for this organization.");
+        return;
+      }
+      parent.replaceChildren();
+      cases.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "item";
+        const top = document.createElement("div");
+        top.className = "row";
+        const title = document.createElement("strong");
+        title.textContent = item.state;
+        top.append(title, flagPill(item.flag_level));
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        meta.textContent = "Case " + item.case_id + " · participant " + item.participant_id;
+        const reasons = document.createElement("p");
+        reasons.textContent = (item.triggering_indicators || []).join(" ");
+        card.append(top, meta, reasons);
+        if (can("acknowledge_escalation") && item.state === "CLINICIAN_NOTIFIED") {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Acknowledge";
+          button.addEventListener("click", () => acknowledge(item.case_id));
+          card.appendChild(button);
+        }
+        if (can("resolve_escalation") && item.state === "ACKNOWLEDGED") {
+          const notes = document.createElement("textarea");
+          notes.id = "resolution-" + item.case_id;
+          notes.name = "resolution_notes";
+          notes.setAttribute("aria-label", "Resolution notes");
+          notes.placeholder = "Resolution notes are required";
+          notes.maxLength = 4000;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "primary";
+          button.textContent = "Resolve case";
+          button.addEventListener("click", () => resolveCase(item.case_id, notes.value));
+          card.append(notes, button);
+        }
+        if (can("view_escalation")) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = "Transparency report";
+          button.addEventListener("click", () => showReport(item.case_id, card));
+          card.appendChild(button);
+        }
+        parent.appendChild(card);
+      });
+    }
+
+    function renderAudit(payload) {
+      const chain = document.getElementById("chain");
+      if (!payload) {
+        chain.textContent = "Audit is visible to clinicians, admins, and auditors.";
+        empty(document.getElementById("audit"), "Switch role to review the chain.");
+        return;
+      }
+      chain.textContent = payload.chain_valid
+        ? "Hash chain valid. " + payload.total_entries + " entries for this organization."
+        : "Hash chain broken at index " + payload.broken_at + ".";
+      const parent = document.getElementById("audit");
+      const entries = payload.entries || [];
+      if (!entries.length) {
+        empty(parent, "No audit entries for this organization yet.");
+        return;
+      }
+      parent.replaceChildren();
+      entries.slice().reverse().slice(0, 8).forEach((entry) => {
+        const row = document.createElement("article");
+        row.className = "item";
+        const title = document.createElement("strong");
+        title.textContent = entry.event_type;
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        meta.textContent = entry.timestamp + " · " + entry.actor_role + " " + entry.actor_id;
+        row.append(title, meta);
+        parent.appendChild(row);
+      });
+    }
+
+    function renderCheckIn(result) {
+      const parent = document.getElementById("checkin-result");
+      parent.replaceChildren();
+      const card = document.createElement("article");
+      card.className = "item";
+      const top = document.createElement("div");
+      top.className = "row";
+      const title = document.createElement("strong");
+      title.textContent = result.evaluation.requires_human_review
+        ? "Human review required"
+        : "Human review optional";
+      top.append(title, flagPill(result.evaluation.flag));
+      const reasons = document.createElement("p");
+      reasons.textContent = result.evaluation.reasons.join(" ");
+      card.append(top, reasons);
+      if (result.notifications && result.notifications.length) {
+        const note = document.createElement("p");
+        note.className = "meta";
+        note.textContent = result.notifications
+          .map((item) => item.channel + ": " + item.detail)
+          .join(" ");
+        card.appendChild(note);
+      }
+      parent.appendChild(card);
+    }
+
+    async function refreshOrgData() {
+      const orgId = selectedOrg();
+      if (!orgId) {
+        renderCases([]);
+        renderAudit(null);
+        renderWearables(null);
+        return;
+      }
+      const jobs = [];
+      if (can("view_escalation")) jobs.push(api("/api/cases?org_id=" + encodeURIComponent(orgId)));
+      else jobs.push(Promise.resolve(null));
+      if (can("query_audit")) jobs.push(api("/api/audit?org_id=" + encodeURIComponent(orgId)));
+      else jobs.push(Promise.resolve(null));
+      if (can("view_own_data") || can("view_escalation") || can("query_audit")) {
+        jobs.push(api("/api/wearables?org_id=" + encodeURIComponent(orgId)));
+      } else {
+        jobs.push(Promise.resolve(null));
+      }
+      const [cases, audit, wearables] = await Promise.all(jobs);
+      if (!cases) {
+        empty(document.getElementById("cases"), "Escalation cases are visible to the clinician, admin, and auditor roles.");
+      } else {
+        renderCases(cases.cases || []);
+      }
+      renderAudit(audit);
+      renderWearables(wearables);
+    }
+
+    function renderWearables(payload) {
+      const parent = document.getElementById("wearable-list");
+      if (!payload) {
+        empty(parent, "Recent readings appear after a participant submits a stub payload.");
+        return;
+      }
+      const readings = payload.readings || [];
+      if (!readings.length) {
+        empty(parent, "No wearable readings for this organization yet.");
+        return;
+      }
+      parent.replaceChildren();
+      readings.slice(0, 6).forEach((reading) => {
+        const row = document.createElement("article");
+        row.className = "item";
+        const title = document.createElement("strong");
+        title.textContent = reading.metric_name + " " + reading.value + " " + reading.unit;
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        meta.textContent = reading.source + " · " + reading.vendor_type + " · " + reading.display_name;
+        row.append(title, meta);
+        parent.appendChild(row);
+      });
+    }
+
+    function wearableSamples() {
+      const source = document.getElementById("wearable-source").value;
+      const specs = [
+        ["wearable-hrv", source === "fitbit" ? "hrv" : "HKQuantityTypeIdentifierHeartRateVariabilitySDNN"],
+        ["wearable-sleep", source === "fitbit" ? "sleep" : "HKCategoryTypeIdentifierSleepAnalysis"],
+        ["wearable-steps", source === "fitbit" ? "steps" : "HKQuantityTypeIdentifierStepCount"],
+      ];
+      return specs.flatMap(([id, type]) => {
+        const value = numberOrNull(id);
+        return value === null ? [] : [{ type, value }];
+      });
+    }
+
+    async function submitWearable() {
+      const samples = wearableSamples();
+      if (!samples.length) {
+        setStatus("Enter at least one wearable value, or load a sample.", "error");
+        return;
+      }
+      setStatus("Normalizing wearable stub…");
+      const result = await api("/api/wearables", {
+        method: "POST",
+        body: {
+          source: document.getElementById("wearable-source").value,
+          org_id: selectedOrg(),
+          display_name: document.getElementById("wearable-name").value,
+          samples,
+        },
+      });
+      const parent = document.getElementById("wearable-result");
+      parent.replaceChildren();
+      const card = document.createElement("article");
+      card.className = "item";
+      const top = document.createElement("div");
+      top.className = "row";
+      const title = document.createElement("strong");
+      title.textContent = result.evaluation.requires_human_review
+        ? "Human review required"
+        : "Human review optional";
+      top.append(title, flagPill(result.evaluation.flag));
+      const reasons = document.createElement("p");
+      reasons.textContent = result.evaluation.reasons.join(" ");
+      const note = document.createElement("p");
+      note.className = "meta";
+      note.textContent = "Normalized locally from " + result.source + ". No vendor API was called.";
+      card.append(top, reasons, note);
+      parent.appendChild(card);
+      setStatus(
+        result.evaluation.requires_human_review
+          ? "Wearable stub opened a case for the sandbox clinician."
+          : "Wearable stub stayed green. No escalation case was opened.",
+        "ok"
+      );
+      await refreshOrgData();
+    }
+
+    async function refresh() {
+      setStatus("Loading the sandbox…");
+      syncRoleButtons();
+      state.me = await api("/api/me");
+      document.getElementById("who").textContent =
+        state.me.label + " · " + state.me.actor_id + " · " + state.me.role;
+      const policyPayload = await api("/api/policies");
+      state.policies = policyPayload.policies || [];
+      state.detail = policyPayload.detail;
+      fillPolicySelect();
+      renderPolicies();
+      await refreshOrgData();
+      setStatus("Sandbox ready. Data on this page is synthetic.", "ok");
+    }
+
+    async function submitCheckIn() {
+      const body = {
+        org_id: selectedOrg(),
+        display_name: document.getElementById("display-name").value,
+        distress_level: numberOrNull("distress"),
+        mood_score: numberOrNull("mood"),
+        sleep_quality: numberOrNull("sleep"),
+        energy_level: numberOrNull("energy"),
+        heart_rate_variability: numberOrNull("hrv"),
+        sleep_hours: numberOrNull("sleep-hours"),
+        keyword_flags: document.getElementById("keywords").value
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        notes: document.getElementById("notes").value,
+      };
+      setStatus("Evaluating check-in…");
+      const result = await api("/api/check-ins", { method: "POST", body });
+      renderCheckIn(result);
+      setStatus(
+        result.evaluation.requires_human_review
+          ? "Elevated flag opened a case for the sandbox clinician."
+          : "Check-in stayed green. No escalation case was opened.",
+        "ok"
+      );
+      await refreshOrgData();
+    }
+
+    async function acknowledge(caseId) {
+      setStatus("Recording clinician acknowledgment…");
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/acknowledge", { method: "POST" });
+      setStatus("Case acknowledged. Resolution notes are still required.", "ok");
+      await refreshOrgData();
+    }
+
+    async function resolveCase(caseId, notes) {
+      setStatus("Resolving case…");
+      await api("/api/cases/" + encodeURIComponent(caseId) + "/resolve", {
+        method: "POST",
+        body: { resolution_notes: notes },
+      });
+      setStatus("Case resolved and recorded in the audit chain.", "ok");
+      await refreshOrgData();
+    }
+
+    async function showReport(caseId, card) {
+      const report = await api("/api/cases/" + encodeURIComponent(caseId) + "/report");
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(report, null, 2);
+      card.appendChild(pre);
+    }
+
+    document.querySelectorAll(".rolebar button").forEach((button) => {
+      button.addEventListener("click", async () => {
+        state.token = button.dataset.token;
+        localStorage.setItem(TOKEN_KEY, state.token);
+        try {
+          await refresh();
+        } catch (error) {
+          setStatus(error.message, "error");
+        }
+      });
+    });
+
+    orgEl.addEventListener("change", () => {
+      fillThresholdEditor();
+      refreshOrgData().catch((error) => setStatus(error.message, "error"));
+    });
+
+    document.getElementById("submit-checkin").addEventListener("click", () => {
+      submitCheckIn().catch((error) => setStatus(error.message, "error"));
+    });
+
+    document.getElementById("submit-wearable").addEventListener("click", () => {
+      submitWearable().catch((error) => setStatus(error.message, "error"));
+    });
+
+    document.getElementById("fill-healthkit").addEventListener("click", () => {
+      document.getElementById("wearable-source").value = "apple_healthkit";
+      document.getElementById("wearable-hrv").value = "16";
+      document.getElementById("wearable-sleep").value = "2.4";
+      document.getElementById("wearable-steps").value = "1200";
+      setStatus("Low HealthKit sample filled. Submit it as the participant role.", "ok");
+    });
+
+    document.getElementById("fill-fitbit").addEventListener("click", () => {
+      document.getElementById("wearable-source").value = "fitbit";
+      document.getElementById("wearable-hrv").value = "48";
+      document.getElementById("wearable-sleep").value = "7.2";
+      document.getElementById("wearable-steps").value = "8400";
+      setStatus("Steady Fitbit sample filled. Submit it as the participant role.", "ok");
+    });
+
+    document.getElementById("fill-sample").addEventListener("click", () => {
+      document.getElementById("distress").value = "8.5";
+      document.getElementById("mood").value = "2";
+      document.getElementById("sleep").value = "2";
+      document.getElementById("keywords").value = "overdose";
+      document.getElementById("notes").value = "Synthetic elevated check-in for the sandbox walkthrough.";
+      setStatus("Sample values filled. Submit as the participant role.", "ok");
+    });
+
+    document.getElementById("create-policy").addEventListener("click", async () => {
+      try {
+        await api("/api/policies", {
+          method: "POST",
+          body: {
+            org_id: document.getElementById("new-org-id").value.trim(),
+            org_name: document.getElementById("new-org-name").value.trim(),
+            consent_model: "opt_in",
+          },
+        });
+        await refresh();
+        setStatus("Policy registered.", "ok");
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    });
+
+    document.getElementById("save-policy").addEventListener("click", async () => {
+      const policy = currentPolicy();
+      if (!policy || !policy.escalation_thresholds) {
+        setStatus("Select an organization whose full policy is visible to an admin.", "error");
+        return;
+      }
+      const next = structuredClone(policy);
+      next.escalation_thresholds.yellow_min_distress = Number(document.getElementById("edit-yellow").value);
+      next.escalation_thresholds.orange_min_distress = Number(document.getElementById("edit-orange").value);
+      next.escalation_thresholds.red_min_distress = Number(document.getElementById("edit-red").value);
+      next.clinician_ack_sla_seconds = Number(document.getElementById("edit-sla").value);
+      try {
+        await api("/api/policies/" + encodeURIComponent(policy.org_id), { method: "PUT", body: next });
+        await refresh();
+        setStatus("Thresholds saved for " + policy.org_name + ".", "ok");
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    });
+
+    document.getElementById("export-audit").addEventListener("click", async () => {
+      try {
+        const bundle = await api("/api/audit/export?org_id=" + encodeURIComponent(selectedOrg()));
+        const view = document.getElementById("export-view");
+        view.classList.remove("hidden");
+        view.textContent = JSON.stringify(bundle, null, 2);
+        setStatus("Export ready. Chain status: " + bundle.export_metadata.chain_integrity + ".", "ok");
+        await refreshOrgData();
+      } catch (error) {
+        setStatus(error.message, "error");
+      }
+    });
+
+    refresh().catch((error) => setStatus(error.message, "error"));
+  </script>
+</body>
+</html>

@@ -22,14 +22,19 @@ Each module has an explicit responsibility and explicit scope limits:
 
 | Module | Responsibility | Does NOT Do |
 |--------|---------------|-------------|
-| `config.py` | Partner policy registration, validation, multi-tenant isolation | Store policies persistently (in-memory registry; production would use a database) |
+| `config.py` | Partner policy registration, validation, multi-tenant isolation | Replace a production database. The in-memory registry is still the library default; `store.py` adds a SQLite sandbox registry |
 | `signal_evaluator.py` | Evaluate check-in signals against policy thresholds; produce workflow flags | Diagnose, assess, or classify conditions; provide clinical recommendations |
 | `escalation.py` | Manage escalation lifecycle state machine; enforce human gates | Make clinical decisions; take autonomous action on elevated flags |
-| `audit.py` | Record all events in append-only, hash-chained log; support export and verification | Guarantee immutability (see honest scope note); store data persistently beyond process lifetime |
+| `audit.py` | Record all events in append-only, hash-chained log; support export and verification | Guarantee immutability (see honest scope note). `SqliteAuditLog` persists the chain for the local sandbox and refuses to open a tampered file |
 | `crisis_router.py` | Provide interfaces for partner-configured crisis resource routing | Guarantee connection to emergency services; operate crisis protocols |
 | `transparency_report.py` | Generate structured decision-support summaries for clinician review | Provide diagnoses or treatment recommendations |
 | `rbac.py` | Enforce role-based permission checks on operations | Replace enterprise identity providers (demonstration-grade RBAC) |
 | `models.py` | Define shared data structures (Participant, RiskFlag, CheckIn, etc.) | Contain business logic or make decisions |
+| `store.py` | Persist policies, the audit chain, cases, and check-ins in a local SQLite file | Provide production WORM storage or multi-instance replication |
+| `sessions.py` | Map fixed sandbox bearer tokens to RBAC roles | Authenticate production users or integrate with an identity provider |
+| `notifications.py` | Record dashboard, SMS, email, and webhook delivery stubs | Send messages or call external providers |
+| `console.py` | Serve the local pilot console and admin API | Operate a production clinical dashboard |
+| `wearables.py` | Normalize synthetic Apple HealthKit and Fitbit samples into canonical metrics | Call Apple, Fitbit, or any device API; interpret readings as clinical measurements |
 
 ---
 
@@ -96,7 +101,7 @@ The following points in the workflow require mandatory human action before the s
 - Entry ID (UUID), timestamp (UTC ISO-8601)
 - Organization ID (multi-tenant isolation key)
 - Actor ID and role
-- Event type (from 15 defined types)
+- Event type (from the defined audit event types, including wearable ingest)
 - Target entity (participant, case, or policy ID)
 - Metadata (event-specific details)
 - Previous hash (SHA-256 of preceding entry)
@@ -127,11 +132,17 @@ The following integration points are defined as interfaces (stubs in the current
 | Interface | Purpose | Status |
 |-----------|---------|--------|
 | Crisis resource routing | Route to partner-configured crisis resources (phone, webhook, internal queue) | Stub; emits audit events; partner responsible for operational readiness |
-| Wearable data ingestion | Accept physiological readings (HRV, sleep, activity) from Apple HealthKit, Fitbit, etc. | Model defined (`BiomarkerReading`); ingestion pipeline planned for v0.2 |
+| Wearable data ingestion | Accept physiological readings (HRV, sleep, activity) from Apple HealthKit and Fitbit sample shapes | Local stub in `wearables.py`. Payloads are normalized and evaluated. No vendor API is called |
 | EHR integration (FHIR) | Bidirectional data exchange with Epic, Cerner via FHIR APIs | Planned for v1.0; not implemented in current release |
 | Notification delivery | Send clinician alerts via SMS, email, webhook, dashboard | Interface defined in policy; delivery stubs in escalation module |
 
 **These are interface definitions, not operational integrations.** Production deployment requires partner-specific configuration, BAAs, and security review for each integration.
+
+## Local Pilot Console
+
+`python -m acuitybridge.console` starts a sandbox HTTP server. It uses the same signal evaluator, escalation state machine, RBAC checks, and audit hash chain as the library. Policies and audit entries are stored in SQLite and reloaded on startup. If the hash chain does not verify, the process refuses to open the database.
+
+The console is a single-process sandbox. It does not send SMS, email, or webhooks, and it does not contact crisis resources.
 
 ---
 

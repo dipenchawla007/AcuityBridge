@@ -37,14 +37,14 @@ This document defines time-bound development milestones for the AcuityBridge Saf
 
 ### Planned Deliverables
 
-- [ ] Persistent policy storage (database-backed registry replacing in-memory)
-- [ ] Persistent audit log storage (database or object storage backend)
-- [ ] Wearable data ingestion pipeline (Apple HealthKit, Fitbit API integration stubs)
-- [ ] Enhanced RBAC with session management and authentication hooks
-- [ ] Configurable notification delivery (SMS via Twilio stub, webhook, email)
-- [ ] Admin API for policy management (REST endpoints)
+- [x] Persistent policy storage (SQLite registry for the local sandbox; the in-memory `PolicyRegistry` remains for library use)
+- [x] Persistent audit log storage (SQLite hash chain that reloads and verifies on startup)
+- [x] Wearable data ingestion stubs (local Apple HealthKit and Fitbit payload normalizers; no vendor API is called)
+- [x] Sandbox session hooks (bearer tokens mapped onto the existing RBAC roles; not an enterprise identity provider)
+- [x] Configurable notification delivery stubs (dashboard, SMS, webhook, and email are recorded only; nothing is sent)
+- [x] Admin API for policy management (local pilot console REST endpoints)
 - [ ] Expanded test coverage (target: >90% line coverage)
-- [ ] Security hardening review (input validation, rate limiting, error handling)
+- [ ] Security hardening review (the pilot console validates inputs and limits request size; rate limiting and a full review remain)
 
 ### Unlocks
 
