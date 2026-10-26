@@ -22,7 +22,7 @@ Before any deployment begins, the following must be completed:
 
 ### Technical
 
-- [ ] **Deployment environment** provisioned (see `docs/02_deployment.md` for OCI reference architecture)
+- [ ] **Deployment environment** provisioned (see `docs/02_deployment.md` for the Azure reference architecture)
 - [ ] **Network security review** completed for the deployment environment
 - [ ] **Integration endpoints** configured (notification channels, crisis resource interfaces)
 - [ ] **Access credentials** provisioned for clinician and admin roles (RBAC configuration)

@@ -12,7 +12,7 @@ This document describes the security architecture, access control model, audit e
 
 | Threat Actor | Attack Surface | Potential Impact | Mitigations |
 |-------------|---------------|-----------------|-------------|
-| **External attacker** | API endpoints, network perimeter | Unauthorized data access; service disruption | TLS termination at load balancer; VCN network segmentation; input validation; rate limiting |
+| **External attacker** | API endpoints, network perimeter | Unauthorized data access; service disruption | TLS termination at the application gateway; Azure Virtual Network segmentation; input validation; rate limiting |
 | **Insider (malicious)** | Direct database access; API with valid credentials | Data exfiltration; audit log tampering; policy manipulation | RBAC enforcement; append-only audit log with hash chain; least-privilege IAM; separation of duties (CLINICIAN cannot manage policies; ADMIN cannot acknowledge escalations) |
 | **Insider (accidental)** | Misconfigured policy; incorrect threshold | Missed escalation; false positive alerts | Policy validation on registration (Pydantic models enforce constraints); threshold ordering enforcement; multi-tenant isolation prevents cross-org contamination |
 | **Compromised device** | Participant mobile device; wearable integration | Spoofed check-in data; false biomarker readings | Data treated as supplementary signals, not clinical measurements; all elevated flags require human clinician review regardless of data source |
@@ -113,7 +113,7 @@ Each partner policy includes a `data_retention_days` field (minimum: 30 days) th
 
 ### Cryptographic erasure (production concept)
 
-In production deployments, participant data can be encrypted with per-participant keys stored in OCI Vault. Deletion is achieved by destroying the encryption key, rendering the encrypted data permanently unrecoverable without modifying the audit chain.
+In production deployments, participant data can be encrypted with per-participant keys stored in Azure Key Vault. Deletion is achieved by destroying the encryption key, rendering the encrypted data permanently unrecoverable without modifying the audit chain.
 
 ---
 

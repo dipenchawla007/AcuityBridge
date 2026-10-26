@@ -115,7 +115,7 @@ For detailed component documentation, see [`docs/01_architecture.md`](docs/01_ar
 
 ### Full System Architecture
 
-The diagram below shows the complete end-to-end infrastructure: OCI deployment topology, multi-tenant data flows, RBAC enforcement boundaries, audit storage pipeline, notification routing, and crisis resource interfaces.
+The diagram below shows the complete end-to-end infrastructure: Azure deployment topology, multi-tenant data flows, RBAC enforcement boundaries, audit storage pipeline, notification routing, and crisis resource interfaces.
 
 ![AcuityBridge Full System Architecture](docs/architecture.png)
 
@@ -175,7 +175,7 @@ For full details, see [`docs/07_limitations_and_disclaimers.md`](docs/07_limitat
 | Document | Description |
 |----------|-------------|
 | [`docs/01_architecture.md`](docs/01_architecture.md) | System architecture and component boundaries |
-| [`docs/02_deployment.md`](docs/02_deployment.md) | OCI reference deployment architecture |
+| [`docs/02_deployment.md`](docs/02_deployment.md) | Azure reference deployment architecture |
 | [`docs/03_security_privacy.md`](docs/03_security_privacy.md) | Security, privacy, and threat model |
 | [`docs/05_pilot_playbook.md`](docs/05_pilot_playbook.md) | Partner pilot deployment guide |
 | [`docs/06_roadmap_milestones.md`](docs/06_roadmap_milestones.md) | 30/60/90-day development roadmap |
